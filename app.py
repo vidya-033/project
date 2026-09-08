@@ -9,8 +9,7 @@ app=Flask(__name__)
 load_dotenv()
 
 try:
-    connection=psycopg2.connect(host = 'localhost',database=os.getenv('DATABASE'),user=os.getenv('USER'),password=os.getenv('PASSWORD'),port=os.getenv('PORT'))
-    connection.autocommit=True
+    connection=psycopg2.connect(os.getenv('DB_URL')
     cursor = connection.cursor()
 
     sql="""create table if not exists todo_list(
@@ -19,7 +18,7 @@ try:
     status varchar(10));"""
 
     cursor.execute(sql)
-    
+    cursor.commit()
     print("Connection")
 
 except:
@@ -32,8 +31,10 @@ def home():
     status = data['status']
     query="""insert into todo_list (task,status) values(%s,%s)"""
     cursor.execute(query,(input_value,status,))
+    cursor.commit()
     query = """select count(*) from todo_list"""
     cursor.execute(query)
+    cursor.commit()
     res = cursor.fetchone()
     return str(res[0])
 
@@ -44,6 +45,7 @@ def complete():
     status = data['status']
     query = """update todo_list set status=%s where task=%s"""
     cursor.execute(query,(status,value,))
+    cursor.commit()
     return ''
 
 @app.route('/delete',methods=['POST'])
@@ -52,8 +54,10 @@ def delete():
     value = data['task']
     query = """delete from todo_list where task=%s"""
     cursor.execute(query,(value,))
+    cursor.commit()
     query = """select count(*) from todo_list"""
     cursor.execute(query)
+    cursor.commit()
     res = cursor.fetchone()
     return str(res[0])
 
